@@ -33,7 +33,7 @@ Dataset link (download instructions in repo): *Hospital Energy Saving System Dat
    - `Energy_Waste` = high (> 70th pct) consumption during non-critical hours  
    - Ratios: `HVAC_to_Total_Ratio`, `Medical_to_Total_Ratio`, `Lighting_to_Total_Ratio`  
 3. **Result**  
-   - 1 532 potential waste records (≈ 15 %) identified  
+   - 1532 potential waste records (≈ 15 %) identified  
 
 ---
 
