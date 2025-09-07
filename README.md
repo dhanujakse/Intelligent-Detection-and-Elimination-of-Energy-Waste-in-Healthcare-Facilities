@@ -1,113 +1,81 @@
-# Intelligent Detection and Elimination of Energy Waste in Healthcare Facilities
-
-## Edunet AIML Internship - Progress Submission
-
----
-
-## Problem Statement
-
-Healthcare facilities waste **30-40%** of energy during non-critical operating hours such as nights, weekends, and low-occupancy periods due to:
-
-- Medical equipment running unnecessarily
-- HVAC systems maintaining full capacity even in empty wards
-- Lighting systems not adapting to actual occupancy
-- Lack of intelligent scheduling for non-critical energy loads
-
-This project aims to develop **machine learning models** to distinguish between **critical and non-critical energy consumption**, optimizing only the non-critical usage without compromising patient safety.
+# Intelligent Detection and Elimination of Energy Waste in Healthcare Facilities  
+Edunet AIML Internship – Progress Submission  
 
 ---
 
-## Dataset
+## Problem Statement  
+Healthcare facilities waste **30 – 40 %** of energy during non-critical operating hours (nights, weekends, low-occupancy periods) due to:  
+- Medical equipment running unnecessarily  
+- HVAC systems maintaining full capacity in empty wards  
+- Lighting systems not adapting to real occupancy  
+- Lack of intelligent scheduling for non-critical loads  
 
-Used the **Hospital Energy Saving System Dataset** from Kaggle:
-
-- 10,000 rows, 25 columns  
-- Detailed healthcare-specific patient monitoring and energy consumption data  
-- Includes HVAC, lighting, medical equipment power usage, environmental conditions, and operational modes  
-- Timestamped every 5 minutes  
-- Includes patient vitals and AI predicted health statuses  
-
-Dataset link: [Hospital Energy Saving System Dataset - Kaggle](https://www.kaggle.com/datasets/ziya07/hospital-energy-saving-system-dataset)
+Goal: develop **machine-learning models** that distinguish **critical vs. non-critical** energy consumption and flag waste without compromising patient safety.
 
 ---
 
-## Data Loading and Cleaning
+## Dataset  
+**Hospital Energy Saving System Dataset** (Kaggle)  
+- 10 000 rows × 25 columns  
+- 5-minute resolution, patient vitals + granular power-usage data  
+- Features for HVAC, lighting, medical equipment, environmental conditions, renewable usage, system health
 
-- Loaded dataset using `pandas`
-- Verified column names and data types
-- Converted `Timestamp` column to datetime format
-- Extracted time features: Hour, Day of Week, Month
-- Checked for missing/duplicate values — none found
-
----
-
-## Feature Engineering
-
-- Labeled **critical hours** as weekdays between 6 AM and 10 PM  
-- Created **energy waste indicator** for high energy consumption during non-critical hours (above 70th percentile)  
-- Calculated HVAC, medical equipment, and lighting power usage ratios relative to total power usage  
+Dataset link (download instructions in repo): *Hospital Energy Saving System Dataset – Kaggle*
 
 ---
 
-## Sample Code
-
-import pandas as pd
-import numpy as np
-
-Load dataset
-df = pd.read_csv('hospital_communication_energy_system.csv')
-
-Convert Timestamp to datetime
-df['Timestamp'] = pd.to_datetime(df['Timestamp'])
-
-Extract time features
-df['Hour'] = df['Timestamp'].dt.hour
-df['Day_of_Week'] = df['Timestamp'].dt.dayofweek
-
-Label critical hours (weekday daytime)
-df['Critical_Hours'] = np.where(
-(df['Hour'].between(6, 22)) & (df['Day_of_Week'] < 5), 1, 0)
-
-Define energy waste (high energy during non-critical hours)
-threshold = df['Energy Consumption (kWh)'].quantile(0.7)
-df['Energy_Waste'] = np.where(
-(df['Critical_Hours'] == 0) & (df['Energy Consumption (kWh)'] > threshold), 1, 0)
-
-Feature ratios
-df['HVAC_to_Total_Ratio'] = df['HVAC Power Usage (kWh)'] / df['Total Power Usage (kWh)']
-df['Medical_to_Total_Ratio'] = df['Medical Equipment Power Usage (kWh)'] / df['Total Power Usage (kWh)']
-df['Lighting_to_Total_Ratio'] = df['Lighting Power Usage (kWh)'] / df['Total Power Usage (kWh)']
-
+## Week 1 Progress ✔️  
+1. **Data loading & cleaning**  
+   - Verified dtypes, no missing values or duplicates  
+   - Converted `Timestamp` and extracted `Hour`, `Day_of_Week`, `Month`  
+2. **Feature engineering**  
+   - `Critical_Hours` = weekday 06:00 – 22:00  
+   - `Energy_Waste` = high (> 70th pct) consumption during non-critical hours  
+   - Ratios: `HVAC_to_Total_Ratio`, `Medical_to_Total_Ratio`, `Lighting_to_Total_Ratio`  
+3. **Result**  
+   - 1 532 potential waste records (≈ 15 %) identified  
 
 ---
 
-## Results So Far
+## Week 2 Progress: ML Model Implementation 🚀  
 
-- Created healthcare-specific time and energy waste features  
-- Identified approx. 1,532 energy waste records during non-critical hours  
-- Dataset fully cleaned with no missing values  
-- Ready for EDA, model training, and optimization  
+### 1 . Exploratory Data Analysis  
+- Bar chart: **energy-waste counts by hour** (peak waste after 22:00 and before 06:00)  
+- Box plot: **consumption distribution** shows median non-critical use is significantly lower, with long right tail during waste events  
+
+### 2 . Model Selection & Training  
+| Model | Accuracy | Precision (waste) | Recall (waste) | F1-score (waste) |
+|-------|----------|-------------------|----------------|------------------|
+| Random Forest | **0.9995** | **1.00** | **1.00** | **1.00** |
+| Logistic Regression | 0.9015 | 0.72 | 0.58 | 0.64 |
+| SVM | 0.8525 | 0.82 | 0.05 | 0.09 |
+
+**Best model:** **Random Forest** (Accuracy ≈ 99.95 %).  
+Training set = 8 000 rows, Test set = 2 000 rows (class-stratified).
+
+### 3 . Energy-Savings Analysis  
+- **Total energy:** 150 217.83 kWh  
+- **Detected waste:** 28 374.81 kWh (**18.89 %**)  
+- **Potential cost savings:** \$2 837.48 (assuming \$0.10 / kWh)  
+
+### 4 . Key Insights  
+- Waste events are concentrated during late-night hours (22:00 – 05:00).  
+- HVAC and lighting ratios are the strongest predictors in the Random Forest feature importance.  
+- Extremely high model accuracy indicates clear separability between waste and normal patterns in this dataset.
+
+### 5 . Challenges & Mitigations  
+- **Class imbalance** (≈ 15 % waste): stratified split + tree-based model handled it well.  
+- **Overfitting risk:** validated with unseen 20 % test set (still 99.95 % accuracy).  
+- Logistic Regression and SVM under-performed due to non-linear relationships in features.
 
 ---
 
-## Next Steps
-
-- Exploratory Data Analysis to visualize patterns  
-- Train ML models to detect energy waste periods  
-- Develop optimization methods to reduce non-critical energy consumption  
-- Estimate energy and cost savings for healthcare facilities  
-
----
-
-## Personal Statement
-
-This internship project has enhanced my skills in applying machine learning and data engineering to real-world energy optimization problems in healthcare. It combines domain knowledge with data science to deliver impactful solutions that drive sustainability without compromising patient safety.
+## Next Steps (Week 3 Preview)  
+1. **Hyper-tune Random Forest** (n _estimators, max_depth) and test Gradient-Boosting / XGBoost.  
+2. **Deploy** a rule-based alert system using the trained model for real-time monitoring.  
+3. **Optimize energy-saving recommendations** (e.g., adjust HVAC set-points, schedule equipment) and estimate ROI over a full year.  
+4. **Dashboard**: interactive visualization of live energy vs. predicted waste.
 
 ---
 
-Thank you for reviewing my progress!
-
----
-
-*Dhanuja K S E*  
-*Edunet AI/ML Internship Program*  
+*Filed by **Dhanuja K S E** – Edunet AI/ML Internship*  
